@@ -1,0 +1,9 @@
+.venv/
+.venv-semgrep/
+__pycache__/
+*.pyc
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/

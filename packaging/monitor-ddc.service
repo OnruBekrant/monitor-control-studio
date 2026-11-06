@@ -1,0 +1,56 @@
+[Unit]
+Description=Monitör Kontrol Stüdyosu (DDC/CI profil otomasyonu + tepsi)
+PartOf=graphical-session.target
+After=graphical-session.target plasma-plasmashell.service
+Requisite=graphical-session.target
+
+[Service]
+Type=dbus
+BusName=io.github.MonitorDDC
+ExecStart=@BIN@ --background
+Restart=on-failure
+RestartSec=3
+
+# --- Sertleştirme (systemd-analyze --user security monitor-ddc.service) ---
+# Uygulamanın gerçekten ihtiyaç duydukları: /dev/i2c-* (ACL), /sys/class/drm (okuma),
+# Wayland/D-Bus soketleri (AF_UNIX), udev olayları (AF_NETLINK), ~/.config/monitor-ddc yazma.
+UMask=0077
+RuntimeDirectory=monitor-ddc
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+LockPersonality=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources @mount @swap @reboot @raw-io @obsolete @cpu-emulation @debug
+SystemCallErrorNumber=EPERM
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+PrivateTmp=yes
+ProtectSystem=strict
+# Ev dizini salt okunur. Qt/KDE tema eklentisi KConfig kilit dosyaları için ~/.config'e,
+# Mesa/Qt önbellekleri için ~/.cache'e yazmak zorunda; bunlar yazılabilir bırakılır.
+# Ama oturum açılışında kod çalıştırılabilecek kalıcılık noktaları kilitlenir.
+ProtectHome=read-only
+ReadWritePaths=%h/.config %h/.cache
+ReadOnlyPaths=-%h/.config/autostart -%h/.config/systemd -%h/.config/environment.d
+ReadOnlyPaths=-%h/.config/plasma-workspace -%h/.config/autostart-scripts -%h/.config/fish
+ReadOnlyPaths=-%h/.local -%h/.ssh -%h/.gnupg
+InaccessiblePaths=-%h/.ssh -%h/.gnupg
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=all
+KeyringMode=private
+RemoveIPC=yes
+
+[Install]
+WantedBy=graphical-session.target

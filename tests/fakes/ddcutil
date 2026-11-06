@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""Sahte ddcutil: gerçek monitör olmadan testler için. Durum FAKE_DDC_STATE JSON dosyasında."""
+import fcntl
+import json
+import os
+import sys
+import time
+
+path = os.environ["FAKE_DDC_STATE"]
+# Test süreci de aynı dosyayı değiştiriyor: oku-değiştir-yaz boyunca kilit tut, atomik yaz
+_lk = open(path + ".lock", "a")  # noqa: SIM115 - süreç sonuna kadar açık kalmalı
+fcntl.flock(_lk, fcntl.LOCK_EX)
+with open(path) as f:
+    st = json.load(f)
+args = sys.argv[1:]
+st.setdefault("calls", []).append(args)
+
+
+def done(code=0):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(st, f)
+    os.replace(tmp, path)
+    sys.exit(code)
+
+
+if st.get("hang"):
+    fcntl.flock(_lk, fcntl.LOCK_UN)
+    time.sleep(30)
+rest = [a for a in args if a not in ("--terse", "--noverify")]
+bus = None
+if "-b" in rest:
+    i = rest.index("-b")
+    bus = int(rest[i + 1])
+    del rest[i:i + 2]
+cmd, ops = rest[0], rest[1:]
+if bus != st.get("bus", 1) or st.get("offline"):
+    print("Display not found", file=sys.stderr)
+    done(1)
+vals = st.setdefault("values", {})
+NC = {0x14, 0x62, 0xDF}
+if cmd == "getvcp":
+    for c in ops:
+        code = int(c, 16)
+        if str(code) not in vals:
+            print(f"VCP {code:02X} ERR")
+            continue
+        v = vals[str(code)]
+        if code in NC:
+            print(f"VCP {code:02X} CNC x00 x{(v >> 8) & 0xFF:02x} x{(v >> 8) & 0xFF:02x} x{v & 0xFF:02x}"
+                  if code == 0xDF else f"VCP {code:02X} CNC x00 x0b x00 x{v:02x}")
+        else:
+            print(f"VCP {code:02X} C {v} 100")
+    done(0)
+if cmd == "setvcp":
+    code, v = int(ops[0], 16), int(ops[1])
+    if code in st.get("fail_codes", []):
+        print("Setvcp failed", file=sys.stderr)
+        done(1)
+    if code not in st.get("readonly", []):
+        vals[str(code)] = v
+    done(0)
+if cmd == "scs":
+    done(0)
+done(1)

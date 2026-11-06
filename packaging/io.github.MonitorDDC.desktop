@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Monitör Kontrol Stüdyosu
+GenericName=DDC/CI Monitor Control
+Comment=Harici monitörün renk, parlaklık ve ses ayarlarını donanımsal olarak yönet
+Exec=@BIN@
+Icon=preferences-desktop-display-color
+Categories=Settings;HardwareSettings;Qt;KDE;
+Keywords=monitor;ddc;brightness;color;temperature;parlaklık;renk;
+StartupNotify=false
+SingleMainWindow=true

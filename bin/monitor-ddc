@@ -1,0 +1,7 @@
+#!/bin/sh
+# Kurulumdan bağımsız başlatıcı: paketi bu betiğin bir üst klasöründen çalıştırır.
+# -P: çalışma dizinini (servis için ~) sys.path'e ekleme → oraya bırakılmış sahte
+#     modüller (örn. ~/PyQt6.py) yüklenemez.
+HERE="$(dirname "$(readlink -f "$0")")"
+export PYTHONPATH="$HERE/.."
+exec /usr/bin/python3 -P -m monitor_ddc "$@"

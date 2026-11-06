@@ -1,0 +1,12 @@
+repos:
+  - repo: local
+    hooks:
+      - { id: ruff, name: ruff, entry: .venv/bin/ruff check, language: system, types: [python] }
+      - { id: mypy, name: mypy, entry: .venv/bin/mypy monitor_ddc, language: system, pass_filenames: false }
+      - { id: bandit, name: bandit, entry: .venv/bin/bandit -q -c pyproject.toml, language: system,
+          types: [python], exclude: ^tests/ }
+      - { id: secrets, name: detect-secrets, entry: .venv/bin/detect-secrets-hook, language: system }
+      - { id: shellcheck, name: shellcheck, entry: .venv/bin/shellcheck -S style, language: system,
+          types: [shell] }
+      - { id: unit, name: birim testleri, entry: env QT_QPA_PLATFORM=offscreen .venv/bin/pytest tests/unit -q -x,
+          language: system, pass_filenames: false, stages: [pre-push] }

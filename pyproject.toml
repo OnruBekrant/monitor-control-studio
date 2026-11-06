@@ -1,0 +1,72 @@
+[project]
+name = "monitor-ddc"
+version = "1.0.0"
+description = "DDC/CI monitör kontrol stüdyosu: renk/parlaklık profilleri ve otomatik uygulama"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "PolyForm-Noncommercial-1.0.0" }
+# PySide6 (Qt for Python, LGPLv3) ve ddcutil dağıtım paketlerinden gelir (pacman: pyside6, ddcutil)
+dependencies = ["PySide6>=6.5"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8", "pytest-cov>=5", "pytest-timeout>=2", "hypothesis>=6",
+    "ruff>=0.6", "mypy>=1.10", "bandit>=1.7", "pip-audit>=2.7",
+    "vulture>=2.11", "detect-secrets>=1.5", "shellcheck-py>=0.10",
+    # semgrep ayrı ortamda: requirements-semgrep.txt (bağımlılıkları açıklı sürümlere sabitli)
+]
+
+[project.scripts]
+monitor-ddc = "monitor_ddc.app:main"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+# E/W/F: temel · B: bugbear · S: bandit güvenlik kuralları · PL: pylint · UP/SIM/RUF: modernlik
+select = ["E", "F", "W", "B", "S", "UP", "SIM", "PL", "RUF", "BLE", "TRY", "PTH", "C4", "PIE", "RET"]
+ignore = [
+    "PLR2004",  # sihirli sayılar: VCP kodları doğası gereği sayı
+    "PLR0913", "PLR0912", "PLR0915", "PLC0415",
+    "RUF001", "RUF002", "RUF003",  # Türkçe karakterler
+    "TRY003", "PTH123",
+    "S603",     # subprocess argüman listesiyle, shell=False; girdiler doğrulanıyor (ddc._run)
+    "S404",
+    "PTH",      # sysfs için os.path bilinçli tercih
+    "TRY004", "TRY301", "TRY400", "PLR0911",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S108", "PLR", "S603", "S607", "BLE001", "PTH", "SIM", "RUF", "B", "E402", "TRY",
+              "PLW0603", "PLW1510"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_unused_ignores = false
+no_site_packages = true
+[[tool.mypy.overrides]]
+module = ["PySide6", "PySide6.*", "shiboken6", "shiboken6.*"]
+follow_imports = "skip"
+follow_untyped_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+timeout = 60
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["monitor_ddc"]
+branch = true
+parallel = true
+patch = ["subprocess"]   # D-Bus/CLI testlerindeki alt süreçlerin kapsamı da ölçülür
+omit = ["monitor_ddc/__main__.py"]
+
+[tool.vulture]
+paths = ["monitor_ddc"]
+min_confidence = 80
