@@ -8,9 +8,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: { persist-credentials: false }
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with: { python-version: "3.12" }
       - name: Sistem paketleri (Qt offscreen, D-Bus, desktop-file-utils)
         run: |
@@ -19,14 +19,16 @@ jobs:
             libfontconfig1 libdbus-1-3 desktop-file-utils libglib2.0-bin
       - name: Araçlar (sabitlenmiş sürümler)
         run: |
-          python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt PySide6==6.12.0
-          python -m venv .venv-semgrep && .venv-semgrep/bin/pip install -r requirements-semgrep.txt
+          python -m venv .venv && .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r requirements-dev.txt PySide6==6.12.0
+          python -m venv .venv-semgrep && .venv-semgrep/bin/pip install --upgrade pip
+          .venv-semgrep/bin/pip install -r requirements-semgrep.txt
       - name: Tüm kontroller
         run: scripts/check.sh
   secrets:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: { fetch-depth: 0, persist-credentials: false }
       - uses: gitleaks/gitleaks-action@v2
         env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
