@@ -6,6 +6,7 @@
 
 **Linux'ta harici monitörlerin rengini, beyaz dengesini ve parlaklığını DDC/CI üzerinden donanımsal olarak yönetin; profiller kendiliğinden yeniden uygulansın.**
 
+[![CI](https://github.com/OnruBekrant/monitor-control-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/OnruBekrant/monitor-control-studio/actions/workflows/ci.yml)
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-blue)](LICENSE.md)
 ![Platform: Linux](https://img.shields.io/badge/platform-Linux-informational)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
